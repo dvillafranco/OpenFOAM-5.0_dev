@@ -32,6 +32,7 @@
     {
         #include "alphaEqn.H"
     }
-
+    #include "phaseChangeTwoPhaseMixture.H"
+    vDotcAlpha1Write == vDotAlpha[0]();
     rho == alpha1*rho1 + alpha2*rho2;
 }

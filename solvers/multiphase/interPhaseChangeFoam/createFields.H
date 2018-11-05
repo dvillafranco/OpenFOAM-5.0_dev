@@ -54,6 +54,19 @@ volScalarField rho
 );
 rho.oldTime();
 
+#include "phaseChangeTwoPhaseMixtures.H"
+volScalarField vDotcAlpha1Write
+        (
+                IOobject
+                        (
+                                "vDotcAlpha1Write",
+                                runTime.timeName(),
+                                mesh,
+                                IOobject::NO_READ,
+                                IOobject::AUTO_WRITE
+                        ),
+                vDotcAlpha1Write = vDotAlpha[0]()
+        );
 
 // Construct interface from alpha1 distribution
 interfaceProperties interface(alpha1, U, mixture());
