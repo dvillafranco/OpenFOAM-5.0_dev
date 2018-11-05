@@ -64,7 +64,7 @@ volScalarField vDotcAlpha1Write
                                 IOobject::NO_READ,
                                 IOobject::AUTO_WRITE
                         ),
-                mesh
+                vDotcAlphal
         );
 
 // Construct interface from alpha1 distribution
