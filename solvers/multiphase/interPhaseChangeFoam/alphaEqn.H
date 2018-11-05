@@ -9,6 +9,8 @@
     const volScalarField& vDotcAlphal = vDotAlphal[0]();
     const volScalarField& vDotvAlphal = vDotAlphal[1]();
     const volScalarField vDotvmcAlphal(vDotvAlphal - vDotcAlphal);
+    const volScalarField& vDotcAlpha1Write = vDotAlpha1[0]();
+    vDotcAlpha1Write.write();
 
     tmp<surfaceScalarField> talphaPhi;
 
