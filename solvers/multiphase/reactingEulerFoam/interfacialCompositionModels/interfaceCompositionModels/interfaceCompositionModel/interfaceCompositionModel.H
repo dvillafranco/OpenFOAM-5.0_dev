@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2015-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,76 +22,82 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::interfaceCompositionModel
+    Foam::InterfaceCompositionModel
 
 Description
-    Generic base class for interface composition models. These models describe
-    the composition in phase 1 of the supplied pair at the interface with phase
-    2.
+    Base class for interface composition models, templated on the two
+    thermodynamic models either side of the interface.
 
 SourceFiles
-    interfaceCompositionModel.C
+    InterfaceCompositionModel.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef interfaceCompositionModel_H
-#define interfaceCompositionModel_H
+#ifndef InterfaceCompositionModel_H
+#define InterfaceCompositionModel_H
+
+#include "interfaceCompositionModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#include "volFields.H"
-#include "dictionary.H"
-#include "hashedWordList.H"
-#include "runTimeSelectionTables.H"
 
 namespace Foam
 {
 
 class phaseModel;
 class phasePair;
+template<class ThermoType> class pureMixture;
+template<class ThermoType> class multiComponentMixture;
 
 /*---------------------------------------------------------------------------*\
-                        Class interfaceCompositionModel Declaration
+                         Class InterfaceCompositionModel Declaration
 \*---------------------------------------------------------------------------*/
 
-class interfaceCompositionModel
+template<class Thermo, class OtherThermo>
+class InterfaceCompositionModel
+:
+    public interfaceCompositionModel
 {
 protected:
 
-    // Protected data
+    // Private data
 
-        //- Phase pair
-        const phasePair& pair_;
+        //- Thermo
+        const Thermo& thermo_;
 
-        //- Names of the transferring species
-        const hashedWordList speciesNames_;
+        //- Other Thermo
+        const OtherThermo& otherThermo_;
+
+        //- Lewis number
+        const dimensionedScalar Le_;
+
+
+    // Private member functions
+
+        //- Get a reference to the local thermo for a pure mixture
+        template<class ThermoType>
+        const typename pureMixture<ThermoType>::thermoType&
+        getLocalThermo
+        (
+            const word& speciesName,
+            const pureMixture<ThermoType>& globalThermo
+        ) const;
+
+        //- Get a reference to the local thermo for a multi component mixture
+        template<class ThermoType>
+        const typename multiComponentMixture<ThermoType>::thermoType&
+        getLocalThermo
+        (
+            const word& speciesName,
+            const multiComponentMixture<ThermoType>& globalThermo
+        ) const;
 
 
 public:
 
-    //- Runtime type information
-    TypeName("interfaceCompositionModel");
-
-
-    // Declare runtime construction
-
-        declareRunTimeSelectionTable
-        (
-            autoPtr,
-            interfaceCompositionModel,
-            dictionary,
-            (
-                const dictionary& dict,
-                const phasePair& pair
-            ),
-            (dict, pair)
-        );
-
-
     // Constructors
 
-        //- Construct from a dictionary and a phase pair
-        interfaceCompositionModel
+        //- Construct from components
+        InterfaceCompositionModel
         (
             const dictionary& dict,
             const phasePair& pair
@@ -99,66 +105,30 @@ public:
 
 
     //- Destructor
-    virtual ~interfaceCompositionModel();
-
-
-    // Selectors
-
-        static autoPtr<interfaceCompositionModel> New
-        (
-            const dictionary& dict,
-            const phasePair& pair
-        );
+    ~InterfaceCompositionModel();
 
 
     // Member Functions
-
-        //- Update the composition
-        virtual void update(const volScalarField& Tf) = 0;
-
-        //- Return the transferring species names
-        const hashedWordList& species() const;
-
-        //- Returns whether the species is transported by the model and
-        //  provides the name of the diffused species
-        bool transports
-        (
-            word& speciesName
-        ) const;
-
-        //- Interface mass fraction
-        virtual tmp<volScalarField> Yf
-        (
-            const word& speciesName,
-            const volScalarField& Tf
-        ) const = 0;
-
-        //- The interface mass fraction derivative w.r.t. temperature
-        virtual tmp<volScalarField> YfPrime
-        (
-            const word& speciesName,
-            const volScalarField& Tf
-        ) const = 0;
 
         //- Mass fraction difference between the interface and the field
         virtual tmp<volScalarField> dY
         (
             const word& speciesName,
             const volScalarField& Tf
-        ) const = 0;
+        ) const;
 
         //- Mass diffusivity
         virtual tmp<volScalarField> D
         (
             const word& speciesName
-        ) const = 0;
+        ) const;
 
         //- Latent heat
         virtual tmp<volScalarField> L
         (
             const word& speciesName,
             const volScalarField& Tf
-        ) const = 0;
+        ) const;
 
         //- Add latent heat flow rate to total
         virtual void addMDotL
@@ -167,13 +137,77 @@ public:
             const volScalarField& Tf,
             volScalarField& mDotL,
             volScalarField& mDotLPrime
-        ) const = 0;
+        ) const;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Instantiation for multi-component-multi-component pairs
+#define makeInterfaceCompositionType(Type, Thermo, Comp, Mix, Phys, OtherThermo, OtherComp, OtherMix, OtherPhys)\
+                                                                               \
+    typedef Thermo<Comp, SpecieMixture<Mix<Phys>>>                             \
+        Type##Thermo##Comp##Mix##Phys;                                         \
+                                                                               \
+    typedef OtherThermo<OtherComp, OtherMix<OtherPhys>>                        \
+        Type##Other##OtherThermo##OtherComp##OtherMix##OtherPhys;              \
+                                                                               \
+    addInterfaceCompositionToRunTimeSelectionTable                             \
+    (                                                                          \
+        Type,                                                                  \
+        Type##Thermo##Comp##Mix##Phys,                                         \
+        Type##Other##OtherThermo##OtherComp##OtherMix##OtherPhys               \
+    )
+
+// Instantiation for multi-component-single-component pairs
+#define makeSpecieInterfaceCompositionType(Type, Thermo, Comp, Mix, Phys, OtherThermo, OtherComp, OtherMix, OtherPhys)\
+                                                                               \
+    typedef Thermo<Comp, SpecieMixture<Mix<Phys>>>                             \
+        Type##Thermo##Comp##Mix##Phys;                                         \
+                                                                               \
+    typedef OtherThermo<OtherComp, SpecieMixture<OtherMix<OtherPhys>>>         \
+        Type##Other##OtherThermo##OtherComp##OtherMix##OtherPhys;              \
+                                                                               \
+    addInterfaceCompositionToRunTimeSelectionTable                             \
+    (                                                                          \
+        Type,                                                                  \
+        Type##Thermo##Comp##Mix##Phys,                                         \
+        Type##Other##OtherThermo##OtherComp##OtherMix##OtherPhys               \
+    )
+
+// Addition to the run-time selection table
+#define addInterfaceCompositionToRunTimeSelectionTable(Type, Thermo, OtherThermo)\
+                                                                               \
+    typedef Type<Thermo, OtherThermo>                                          \
+        Type##Thermo##OtherThermo;                                             \
+                                                                               \
+    defineTemplateTypeNameAndDebugWithName                                     \
+    (                                                                          \
+        Type##Thermo##OtherThermo,                                             \
+        (                                                                      \
+            word(Type##Thermo##OtherThermo::typeName_()) + "<"                 \
+          + word(Thermo::typeName) + ","                                       \
+          + word(OtherThermo::typeName) + ">"                                  \
+        ).c_str(),                                                             \
+        0                                                                      \
+    );                                                                         \
+                                                                               \
+    addToRunTimeSelectionTable                                                 \
+    (                                                                          \
+        interfaceCompositionModel,                                             \
+        Type##Thermo##OtherThermo,                                             \
+        dictionary                                                             \
+    )
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#ifdef NoRepository
+    #include "InterfaceCompositionModel.C"
+#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
