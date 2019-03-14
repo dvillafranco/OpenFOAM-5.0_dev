@@ -53,19 +53,78 @@ volScalarField rho
     alpha1*rho1 + alpha2*rho2
 );
 rho.oldTime();
+#include "phaseChangeTwoPhaseMixture.H"
 
 volScalarField vDotcAlpha1Write
         (
                 IOobject
                         (
                                 "vDotcAlpha1Write",
-                                runTime.timeName(),
+                                mesh.time().timeName(),
                                 mesh,
                                 IOobject::NO_READ,
                                 IOobject::AUTO_WRITE
                         ),
-                mixture->vDotAlphal[0]()
+			mesh,
+			dimensionedScalar("vDotcAlpha1Write",dimless/dimTime,0.0)
+			
         );
+
+volScalarField vDotvAlpha1Write
+    	(
+	 	IOobject
+			(
+				"vDotvAlpha1Write",
+				mesh.time().timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+			),
+			mesh,
+			dimensionedScalar("vDotvAlpha1Write",dimless/dimTime,0.0)
+	);
+
+volScalarField vDotvmcAlpha1Write
+	(
+		IOobject
+			(
+				"vDotvmcAlpha1Write",
+				mesh.time().timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+			),
+			mesh,
+			dimensionedScalar("vDotvmcAlpha1Write",dimless/dimTime,0.0)
+	);
+
+volScalarField mDotcAlphalWrite
+	(
+		IOobject
+			(
+				"mDotcAlphalWrite",
+				mesh.time().timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+			),
+			mesh,
+			dimensionedScalar("mDotcAlphalWrite",dimless/dimTime,0.0)
+	);
+
+volScalarField mDotvAlphalWrite
+	(
+		IOobject
+			(
+				"mDotvAlphalWrite",
+				mesh.time().timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+			),
+			mesh,
+			dimensionedScalar("mDotvAlphalWrite",dimless/dimTime,0.0)
+	);
 
 // Construct interface from alpha1 distribution
 interfaceProperties interface(alpha1, U, mixture());
