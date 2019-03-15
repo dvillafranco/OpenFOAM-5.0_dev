@@ -4,4 +4,4 @@ Kunz/Kunz.C
 Merkle/Merkle.C
 SchnerrSauer/SchnerrSauer.C
 
-LIB = $(FOAM_USER_LIBBIN)/libphaseChangeTwoPhaseMixtures
+LIB = $(FOAM_USER_LIBBIN)/libphaseChangeTwoPhaseMixturesPVap

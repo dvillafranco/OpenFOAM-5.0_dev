@@ -11,7 +11,8 @@ EXE_INC = \
     -I$(LIB_SRC)/sampling/lnInclude
 
 EXE_LIBS = \
-    -lphaseChangeTwoPhaseMixtures \
+    -L$(FOAM_USER_LIBBIN)\
+    -lphaseChangeTwoPhaseMixturesPVap \
     -ltwoPhaseMixture \
     -linterfaceProperties \
     -ltwoPhaseProperties \

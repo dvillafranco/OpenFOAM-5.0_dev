@@ -760,7 +760,7 @@ $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/subCycle.H \
 $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/subCycleTime.H \
 $(WM_PROJECT_DIR)/src/transportModels/interfaceProperties/lnInclude/interfaceProperties.H \
 $(WM_PROJECT_DIR)/src/transportModels/interfaceProperties/lnInclude/surfaceTensionModel.H \
-phaseChangeTwoPhaseMixtures/lnInclude/phaseChangeTwoPhaseMixture.H \
+phaseChangeTwoPhaseMixturesNuc/lnInclude/phaseChangeTwoPhaseMixtureNuc.H \
 $(WM_PROJECT_DIR)/src/transportModels/incompressible/lnInclude/incompressibleTwoPhaseMixture.H \
 $(WM_PROJECT_DIR)/src/transportModels/incompressible/transportModel/transportModel.H \
 $(WM_PROJECT_DIR)/src/transportModels/incompressible/viscosityModels/viscosityModel/viscosityModel.H \

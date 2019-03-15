@@ -46,7 +46,7 @@ Description
 #include "CMULES.H"
 #include "subCycle.H"
 #include "interfaceProperties.H"
-#include "phaseChangeTwoPhaseMixture.H"
+#include "phaseChangeTwoPhaseMixtureNuc.H"
 #include "turbulentTransportModel.H"
 #include "pimpleControl.H"
 #include "fvOptions.H"

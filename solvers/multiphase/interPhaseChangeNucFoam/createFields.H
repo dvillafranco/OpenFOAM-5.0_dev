@@ -54,12 +54,26 @@ volScalarField n_
     mesh
 );
 
+Info<< "Reading field rRb_set\n" << endl;
+volScalarField rRb_set
+(
+    IOobject
+    (
+	"rRb_set",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
 #include "createPhi.H"
 
 
-Info<< "Creating phaseChangeTwoPhaseMixture\n" << endl;
-autoPtr<phaseChangeTwoPhaseMixture> mixture =
-    phaseChangeTwoPhaseMixture::New(U, phi);
+Info<< "Creating phaseChangeTwoPhaseMixtureNuc\n" << endl;
+autoPtr<phaseChangeTwoPhaseMixtureNuc> mixture =
+    phaseChangeTwoPhaseMixtureNuc::New(U, phi);
 
 volScalarField& alpha1(mixture->alpha1());
 volScalarField& alpha2(mixture->alpha2());
@@ -81,7 +95,7 @@ volScalarField rho
     alpha1*rho1 + alpha2*rho2
 );
 rho.oldTime();
-#include "phaseChangeTwoPhaseMixture.H"
+#include "phaseChangeTwoPhaseMixtureNuc.H"
 
 volScalarField vDotcAlpha1Write
         (
