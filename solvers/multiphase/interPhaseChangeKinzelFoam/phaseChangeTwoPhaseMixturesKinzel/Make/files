@@ -1,0 +1,8 @@
+phaseChangeTwoPhaseMixture/phaseChangeTwoPhaseMixtureNuc.C
+phaseChangeTwoPhaseMixture/newPhaseChangeTwoPhaseMixture.C
+Kunz/Kunz.C
+Merkle/Merkle.C
+SchnerrSauer/SchnerrSauerNuc.C
+Kinzel/Kinzel.C
+
+LIB = $(FOAM_USER_LIBBIN)/libphaseChangeTwoPhaseMixturesKinzel
