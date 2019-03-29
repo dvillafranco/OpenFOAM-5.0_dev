@@ -101,6 +101,7 @@ public:
         //  and a coefficient to multiply  alphal for the vaporisation rate
         virtual Pair<tmp<volScalarField>> mDotAlphal() const;
 
+        virtual Pair<tmp<volScalarField>> pCoeffChange() const;
         //- Return the mass condensation and vaporisation rates as coefficients
         //  to multiply (p - pSat)
         virtual Pair<tmp<volScalarField>> mDotP() const;

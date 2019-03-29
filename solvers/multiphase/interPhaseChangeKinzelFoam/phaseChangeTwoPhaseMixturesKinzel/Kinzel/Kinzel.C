@@ -58,7 +58,7 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::Kinzel
     dNuc_("dNuc", dimLength, phaseChangeTwoPhaseMixtureCoeffs_),
     Cc_("Cc", dimless, phaseChangeTwoPhaseMixtureCoeffs_),
     Cv_("Cv", dimless, phaseChangeTwoPhaseMixtureCoeffs_),
-
+    Pref_("Pref",pSat().dimensions(),phaseChangeTwoPhaseMixtureCoeffs_),
     p0_("0", pSat().dimensions(), 0.0)
 {
     correct();
@@ -91,6 +91,19 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::alphaNuc
     return Vnuc/(1 + Vnuc);
 }
 
+Foam::tmp<Foam::volScalarField>
+Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::alphaGammaTermVap() const
+{
+    volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
+    const volScalarField& n_ = alpha1_.db().lookupObject<volScalarField>("n_");
+    volScalarField alphaNuc(this->alphaNuc(n_));
+    return pow
+    (
+     alphaNuc/(1+alphaNuc -limitedAlpha1),
+     7.0/5.0
+    );
+}
+
 
 Foam::tmp<Foam::volScalarField>
 Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::pCoeffCond
@@ -106,11 +119,7 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::pCoeffCond
         limitedAlpha1*rho1() + (scalar(1) - limitedAlpha1)*rho2()
     );
 
-    return pow
-    (
-	((2/3)*(max(p-pSat(), p0_))/rho1()+((2/3)*100000/rho1()*1/(1-1.4)*(alphaNuc/(1+alphaNuc-limitedAlpha1)))),
-        1.0/2.0
-    );
+    return sqrt(mag((2.0/3.0)*(p-pSat())/rho1()+((2.0/3.0)*Pref_/rho1()*1.0/(1.0-1.4)*(alphaGammaTermVap()))));
 }
 
 Foam::tmp<Foam::volScalarField>
@@ -122,11 +131,7 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::pCoeffVap
     const volScalarField& n_ = alpha1_.db().lookupObject<volScalarField>("n_");
     volScalarField alphaNuc(this->alphaNuc(n_));
     volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
-    return pow
-    (
-        ((2/3)*(min(p-pSat(), p0_))/rho1()+((2/3)*100000/rho1()*1/(1-1.4)*(alphaNuc/(1+alphaNuc-limitedAlpha1)))),
-        1.0/2.0
-    );
+    return sqrt(mag(((2.0/3.0)*((p-pSat())))/rho1()+(((2.0/3.0)*Pref_/rho1())*(1.0/(1.0-1.4))*(alphaGammaTermVap()-(alphaNuc/(1+alphaNuc-limitedAlpha1))))));
 }
 
 Foam::tmp<Foam::volScalarField>
@@ -134,13 +139,30 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::alphaLiqCoeff() const
 
 {
     volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
-     
+    const volScalarField& n_ = alpha1_.db().lookupObject<volScalarField>("n_");
+    volScalarField alphaNuc(this->alphaNuc(n_)); 
     return pow
     (
-       1-limitedAlpha1,
+       1.0+alphaNuc-limitedAlpha1,
        1.0/6.0
     );
 }
+
+Foam::tmp<Foam::volScalarField>
+Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::alphaLiqCoeffVap() const
+{
+    volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
+    const volScalarField& n_ = alpha1_.db().lookupObject<volScalarField>("n_");
+    volScalarField alphaNuc(this->alphaNuc(n_));
+    return pow
+    (
+      1.0+alphaNuc-limitedAlpha1,
+      2.0/3.0
+    );
+}
+
+
+
 
 Foam::Pair<Foam::tmp<Foam::volScalarField>>
 Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::mDotAlphal() const
@@ -152,60 +174,55 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::mDotAlphal() const
     volScalarField alphaNuc(this->alphaNuc(n_));
 
     volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
+    volScalarField rho
+    (
+        limitedAlpha1*rho1() + (scalar(1) - limitedAlpha1)*rho2()
+    );
    
     return Pair<tmp<volScalarField>>
     (
-        Cc_*pCoeffCond*alphaLiqCoeff()*C_infty(),
-       	Cv_*pCoeffVap*alphaLiqCoeff()*C_infty()
+        Cc_*pCoeffCond*pos0((((2.0/3.0)*((p-pSat())))/rho1()+(((2.0/3.0)*Pref_/rho1())*(1.0/(1.0-1.4))*(alphaGammaTermVap()))))*alphaLiqCoeff()*C_infty()*rho1()*rho2()/rho,
+       	-Cv_*pCoeffVap*neg((((2.0/3.0)*((p-pSat())))/rho1()+(((2.0/3.0)*Pref_/rho1())*(1.0/(1.0-1.4))*(alphaGammaTermVap()-(alphaNuc/(1+alphaNuc-limitedAlpha1))))))*alphaLiqCoeffVap()*C_infty()*rho1()*rho2()/rho
     );
     
 }
 
-//else
-//{
-//Foam::Pair<Foam::tmp<Foam:volScalarField>>
-//Foam::phaseChangeTwoPhaseMixtures::SchnerrSauer::mDotAlphal() const
-//{
-//   const volScalarField& p = alpha1_.db().lookupObject<volScalarField>("p");
-//   volScalarField pCoeff(this->pCoeff(p));
-//
-//   volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
-//
-//  return Pair<tmp<volScalarField>>
-//   (
-//     Cc_limitedAlpha1*pCoeff*p0_*max(p-pSat(),p0_),
-//    
-//     Cv_*(1.0+alphaNuc()-limitedAlpha1)*pCoeff*min(p-pSat(), p0_)
-//   );
-//}
-//}
-//}    
-//	return Pair<tmp<volScalarField>>
-//	(
-//		p0_,
-//
-//		Cv_*(1.0 + alphaNuc() - limitedAlpha1)*pCoeff*min(p-pSat(),p0_)
-//	);
+Foam::Pair<Foam::tmp<Foam::volScalarField>>
+Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::pCoeffChange() const
+{
+    const volScalarField& p = alpha1_.db().lookupObject<volScalarField>("p");
+    volScalarField pCoeffCond(this->pCoeffCond(p));
+    volScalarField pCoeffVap(this->pCoeffVap(p));
+    return Pair<tmp<volScalarField>>
+    (
+     1.0*pCoeffCond,
+     1.0*pCoeffVap
+    );
+}
+      
+
     
-
-
-
 Foam::Pair<Foam::tmp<Foam::volScalarField>>
 Foam::phaseChangeTwoPhaseMixturesNuc::Kinzel::mDotP() const
 {
     const volScalarField& p = alpha1_.db().lookupObject<volScalarField>("p");
     volScalarField pCoeffCond(this->pCoeffCond(p));
+    volScalarField pCoeffVap(this->pCoeffVap(p));
     const volScalarField& n_ = alpha1_.db().lookupObject<volScalarField>("n_");
     volScalarField alphaNuc(this->alphaNuc(n_));
 
     volScalarField limitedAlpha1(min(max(alpha1_, scalar(0)), scalar(1)));
-    volScalarField apCoeff(limitedAlpha1*pCoeffCond);
-
+    volScalarField apCoeffCond(limitedAlpha1*pCoeffCond);
+    volScalarField apCoeffVap(limitedAlpha1*pCoeffVap);
+    volScalarField rho
+    (
+	limitedAlpha1*rho1() + (scalar(1) - limitedAlpha1)*rho2()
+    );
     return Pair<tmp<volScalarField>>
     (
-        Cc_*(1.0 - limitedAlpha1)*pos0(p - pSat())*apCoeff,
+        Cc_*(1.0 - limitedAlpha1)*pos0(p - pSat())*apCoeffCond*rho*C_infty()/(mag(p-pSat())+0.01*pSat()),
 
-        (-Cv_)*(1.0 + alphaNuc - limitedAlpha1)*neg(p - pSat())*apCoeff
+        (-Cv_)*(1.0 + alphaNuc - limitedAlpha1)*neg(p - pSat())*apCoeffVap*rho*C_infty()/(mag(p-pSat())+0.01*pSat())
     );
 }
 

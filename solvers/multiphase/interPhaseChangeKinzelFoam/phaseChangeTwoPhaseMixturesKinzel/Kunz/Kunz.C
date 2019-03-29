@@ -79,6 +79,17 @@ Foam::phaseChangeTwoPhaseMixturesNuc::Kunz::mDotAlphal() const
 }
 
 Foam::Pair<Foam::tmp<Foam::volScalarField>>
+Foam::phaseChangeTwoPhaseMixturesNuc::Kunz::pCoeffChange() const
+{
+    const volScalarField& p = alpha1_.db().lookupObject<volScalarField>("p");
+    return Pair<tmp<volScalarField>>
+    (
+      max(p-pSat(),p0_),
+      min(p-pSat(),p0_)
+    );
+}
+
+Foam::Pair<Foam::tmp<Foam::volScalarField>>
 Foam::phaseChangeTwoPhaseMixturesNuc::Kunz::mDotP() const
 {
     const volScalarField& p = alpha1_.db().lookupObject<volScalarField>("p");

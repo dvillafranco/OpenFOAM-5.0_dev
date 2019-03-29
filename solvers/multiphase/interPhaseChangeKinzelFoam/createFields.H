@@ -97,6 +97,34 @@ volScalarField rho
 rho.oldTime();
 #include "phaseChangeTwoPhaseMixtureNuc.H"
 
+volScalarField pCoeffChangeCondWrite
+        (
+                IOobject
+      			(
+				"pCoeffChangeCondWrite",
+				mesh.time().timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+		        ),
+			mesh,
+		        dimensionedScalar("pCoeffChangeCondWrite",dimLength/dimTime,0.0)
+		        //dimensionedScalar("pCoeffChangeCondWrite",dimTime/(dimLength*dimLength),0.0)
+        );
+volScalarField pCoeffChangeVapWrite
+        (
+		IOobject
+			(
+				"pCoeffChangeVapWrite",
+				mesh.time().timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+			),
+			mesh,
+			dimensionedScalar("pCoeffChangeVapWrite",dimLength/dimTime,0.0)
+			//dimensionedScalar("pCoeffChangeVapWrite",dimTime/(dimLength*dimLength),0.0)
+ 	);
 volScalarField vDotcAlpha1Write
         (
                 IOobject

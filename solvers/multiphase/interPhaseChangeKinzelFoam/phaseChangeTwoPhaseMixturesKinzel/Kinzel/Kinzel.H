@@ -76,6 +76,8 @@ class Kinzel
 
         dimensionedScalar p0_;
 
+        dimensionedScalar Pref_;
+
         //- Nucleation site volume-fraction
         tmp<volScalarField>alphaNuc(const volScalarField& n_) const;
 
@@ -84,6 +86,11 @@ class Kinzel
 
         //- alpha Coefficient for Kinzel Model
         tmp<volScalarField>alphaLiqCoeff() const;
+
+        //- alpha Coefficient for Vapor term in Kinzel Model
+        tmp<volScalarField>alphaLiqCoeffVap() const;
+   
+        tmp<volScalarField>alphaGammaTermVap() const;
 
         //- Part of the condensation and vapourisation rates
         tmp<volScalarField> pCoeffCond(const volScalarField& p) const;
@@ -124,7 +131,8 @@ public:
         //- Return the mass condensation and vaporisation rates as coefficients
         //  to multiply (p - pSat)
         virtual Pair<tmp<volScalarField>> mDotP() const;
-
+  
+        virtual Pair<tmp<volScalarField>> pCoeffChange() const;
         //- Correct the SchnerrSauer phaseChange model
         virtual void correct();
 

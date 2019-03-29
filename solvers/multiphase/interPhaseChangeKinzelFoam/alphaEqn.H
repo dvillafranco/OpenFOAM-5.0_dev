@@ -13,7 +13,11 @@
     vDotvAlpha1Write = vDotAlphal[1]();
     vDotvmcAlpha1Write = vDotAlphal[1]() - vDotAlphal[0]();
     //vDotcAlpha1Write.write();
-    
+    Pair<tmp<volScalarField>> pCoeffChangeWrite = 
+        mixture->pCoeffChangeWrite();
+    pCoeffChangeCondWrite = pCoeffChangeWrite[0]();
+    pCoeffChangeVapWrite = pCoeffChangeWrite[1]();
+
     tmp<surfaceScalarField> talphaPhi;
 
     if (MULESCorr)

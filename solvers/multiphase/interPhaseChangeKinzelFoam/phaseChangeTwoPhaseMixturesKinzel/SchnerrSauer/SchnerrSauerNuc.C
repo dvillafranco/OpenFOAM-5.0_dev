@@ -113,6 +113,18 @@ Foam::phaseChangeTwoPhaseMixturesNuc::SchnerrSauer::pCoeff
        *rRb(limitedAlpha1)/(rho*sqrt(mag(p - pSat()) + 0.01*pSat()));
 }
 
+Foam::Pair<Foam::tmp<Foam::volScalarField>>
+Foam::phaseChangeTwoPhaseMixturesNuc::SchnerrSauer::pCoeffChange() const
+{
+    const volScalarField& p = alpha1_.db().lookupObject<volScalarField>("p");
+    volScalarField pCoeff(this->pCoeff(p));
+    return Pair<tmp<volScalarField>>
+    (
+     1.0*pCoeff,
+     1.0*pCoeff
+    );
+}
+
 
 Foam::Pair<Foam::tmp<Foam::volScalarField>>
 Foam::phaseChangeTwoPhaseMixturesNuc::SchnerrSauer::mDotAlphal() const

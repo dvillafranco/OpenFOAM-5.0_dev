@@ -64,6 +64,17 @@ Foam::phaseChangeTwoPhaseMixtureNuc::vDotAlphal() const
     );
 }
 
+Foam::Pair<Foam::tmp<Foam::volScalarField>>
+Foam::phaseChangeTwoPhaseMixtureNuc::pCoeffChangeWrite() const
+{
+    Pair<tmp<volScalarField>> pCoeffChange = this->pCoeffChange();
+    return Pair<tmp<volScalarField>>
+    (
+         pCoeffChange[0],
+         pCoeffChange[1]
+    );
+}
+
 
 
 Foam::Pair<Foam::tmp<Foam::volScalarField>>

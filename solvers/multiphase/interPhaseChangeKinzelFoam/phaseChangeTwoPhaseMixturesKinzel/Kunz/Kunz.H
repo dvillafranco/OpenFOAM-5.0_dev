@@ -111,6 +111,7 @@ public:
         //  to multiply (p - pSat)
         virtual Pair<tmp<volScalarField>> mDotP() const;
 
+        virtual Pair<tmp<volScalarField>> pCoeffChange() const;
         //- Correct the Kunz phaseChange model
         virtual void correct();
 
